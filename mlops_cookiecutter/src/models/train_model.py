@@ -3,24 +3,9 @@ import os
 from typing import Callable, Tuple, Union, Optional, List
 import torch
 from torch import nn
-from torch.utils.data import Dataset, DataLoader
 
-from utils.model_utils import get_latest_version, visualize_metrics
+from utils.model_utils import *
 from model import MyModel
-
-class MnistDataset(Dataset):
-    """
-    Dataloader for the MNIST dataset based on numpy arrays.
-    """
-    def __init__(self, images, labels):
-        self.images = torch.from_numpy(images).float()
-        self.labels = torch.from_numpy(labels).long()
-        
-    def __len__(self):
-        return len(self.labels)
-    
-    def __getitem__(self, idx):
-        return self.images[idx], self.labels[idx]
 
 def validation(
     model: nn.Module, 
@@ -30,7 +15,6 @@ def validation(
     accuracy = 0
     test_loss = 0
     for images, labels in testloader:
-
         images = images.resize_(images.size()[0], 784)
 
         output = model.forward(images)
@@ -160,70 +144,6 @@ def train(
                     train_losses, train_accuracies, 
                     test_losses, test_accuracies,
                     last = True)
-
-def save_latest_model(model, model_dir='models'):
-    """
-    Saves the latest model in the "latest" fubfolder in the "models" folder
-    """
-    version = get_latest_version()
-    if version > -1:
-        latest_model_path = os.path.join(model_dir, 'latest')
-        if not os.path.exists(latest_model_path):
-            os.makedirs(latest_model_path)
-        print(f"Saving LATEST model in directory: {latest_model_path}/model.pth")
-        torch.save(model.state_dict(), latest_model_path + "/model.pth")
-
-def load_tensors(datadir="data/processed"):
-    """
-    Loads the saved tensors in data/processed
-    """
-
-    # alternative to move to the preset directory
-    print(f"Loading data from: {datadir}")
-
-    train_images = torch.load(datadir + '/train_images.pt')
-    train_labels = torch.load(datadir + '/train_labels.pt')
-    test_images = torch.load(datadir + '/test_images.pt')
-    test_labels = torch.load(datadir + '/test_labels.pt')
-
-    # Create the custom dataset object
-    train_dataset = MnistDataset(train_images, train_labels)
-    test_dataset = MnistDataset(test_images, test_labels)
-
-    # Create the DataLoader
-    trainloader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=2)
-    testloader = DataLoader(test_dataset, batch_size=32, shuffle=False, num_workers=2)
-
-    return trainloader, testloader
-
-def save_model(model, version, model_dir='models'):
-    """
-    Saves the model in a subfolder in the "models" folder that is named after the version of the model (i.e. v1, v2, v3 etc...)
-    """
-    version_dir = os.path.join(model_dir, 'v{}'.format(version))
-    if not os.path.exists(version_dir):
-        os.makedirs(version_dir)
-    model_path = os.path.join(version_dir, 'model.pth')
-    print(f"Saving model in directory: {model_path}")
-    torch.save(model.state_dict(), model_path)
-    
-
-def load_model(model, model_dir='models'):
-    """
-    Loads the last saved version of the model, or if there is none, does nothing.
-    """
-    print(f"Loading model from directory: {model_dir}")
-    version = get_latest_version(model_dir)
-    if version > -1:
-        model_path = os.path.join(model_dir, 'v{}'.format(version), 'model.pth')
-        if os.path.exists(model_path):
-            model.load_state_dict(torch.load(model_path))
-        else:
-            print("Warning: model version v{} does not exist. Unable to load model.".format(version))
-    else:
-        print("Warning: no previous version of the model exists. Creating an empty (v0) model...".format(version))
-    
-    return model
 
 def main():
     # load model

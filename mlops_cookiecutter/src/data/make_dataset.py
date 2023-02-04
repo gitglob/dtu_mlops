@@ -23,13 +23,13 @@ def load_mnist(input_filepath):
     print(f"\nLoading data from: {input_filepath}")
     data = np.load(input_filepath + "/train_1.npz")
     train_images = data["images"]
-    print(f"Shape of training data: {train_images.shape}")
+    print(f"Shape of training images: {train_images.shape}")
     train_labels = data["labels"]
     _ = data["allow_pickle"]
 
     data = np.load(input_filepath + "/test.npz")
     test_images = data["images"]
-    print(f"Shape of test data: {test_images.shape}")
+    print(f"Shape of test images: {test_images.shape}")
     test_labels = data["labels"]
     _ = data["allow_pickle"]
 
@@ -68,7 +68,6 @@ def preprocess(data):
     print("Preprocessing features")
     out_images = []
     for x in [train_images, test_images]:
-        print(np.shape(x))
         # current mean and std dev
         m1 = np.mean(x, axis=(1,2)).reshape(-1, 1)
         s1 = np.std(x, axis=(1,2)).reshape(-1, 1)
@@ -79,7 +78,6 @@ def preprocess(data):
 
         normalizer = lambda xi, mi, si: m2 + ((xi - mi) * (s2/si))
         x_norm = np.array([normalizer(x_i, m_i, s_i) for (x_i, m_i, s_i) in zip(x, m1, s1)])
-        print(np.shape(x_norm))
         m2 = np.mean(x_norm, axis=(1,2)).reshape(-1, 1)
         s2 = np.std(x_norm, axis=(1,2)).reshape(-1, 1)
         # print(f"Shape of μ, σ vector (should be 5000x1): {np.shape(m2), np.shape(s2)}")
@@ -90,7 +88,6 @@ def preprocess(data):
     print("Preprocessing labels")
     out_labels = []
     for x in [train_labels, test_labels]:
-        print(np.shape(x))
         # current mean and std dev
         m1 = np.mean(x).reshape(-1, 1)
         s1 = np.std(x).reshape(-1, 1)
@@ -101,7 +98,6 @@ def preprocess(data):
 
         x_norm = m2 + ((x - m1) * (s2/s1))
         x_norm = x.reshape(-1, 1)
-        print(np.shape(x_norm))
         m2 = np.mean(x_norm).reshape(-1, 1)
         s2 = np.std(x_norm).reshape(-1, 1)
         # print(f"Shape of μ, σ vector (should be 1x1): {np.shape(m2), np.shape(s2)}")
