@@ -5,6 +5,7 @@ import torch
 from torch import nn
 from torch.utils.data import Dataset, DataLoader
 
+from utils.model_utils import get_latest_version, visualize_metrics
 from model import MyModel
 
 class MnistDataset(Dataset):
@@ -63,13 +64,21 @@ def train(
     # train the network
     if optimizer is None:
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
-    steps = 0
+    step = 0
+    train_steps = []
+    test_steps = []
     running_loss = 0
+    running_correct = 0
+    running_tot = 0
+    train_losses = []
+    train_accuracies = []
+    test_losses = []
+    test_accuracies = []
     for e in range(epochs):
         # Model in training mode, dropout is on
         model.train()
         for images, labels in trainloader:
-            steps += 1
+            train_steps.append(step)
             
             # Flatten images into a 784 long vector
             images.resize_(images.size()[0], 784)
@@ -77,13 +86,28 @@ def train(
             optimizer.zero_grad()
             
             output = model.forward(images)
+            ps = torch.exp(output)
+            _, predicted = torch.max(ps, dim=1)
+
+            # calculate loss
             loss = criterion(output, labels)
             loss.backward()
             optimizer.step()
             
+            # calculate running loss
             running_loss += loss.item()
+            
+            # calculate running correct correct and total predictions
+            running_correct += (predicted == labels).sum().item()
+            running_tot += len(labels)
 
-            if steps % print_every == 0:
+            # log current training loss and accuracy
+            train_losses.append(loss.item())
+            train_accuracies.append((predicted == labels).sum().item() / len(labels))
+
+
+            if step % print_every == 0:
+                test_steps.append(step)
                 # Model in inference mode, dropout is off
                 model.eval()
                 
@@ -93,16 +117,33 @@ def train(
                 
                 print("Epoch: {}/{}.. ".format(e+1, epochs),
                       "Training Loss: {:.3f}.. ".format(running_loss/print_every),
+                      "Training Accuracy: {:.3f}.. ".format(running_correct/running_tot),
                       "Test Loss: {:.3f}.. ".format(test_loss/len(testloader)),
                       "Test Accuracy: {:.3f}".format(accuracy/len(testloader)))
-                
-                running_loss = 0
-                
+
+                # log current loss and accuracy
+                test_losses.append(test_loss/print_every)
+                test_accuracies.append(accuracy/len(testloader))
+                              
                 # save the model every logging period
                 save_model(model, version)
 
+                # visualize and save the loss and accuracy thus far
+                visualize_metrics(e, print_every, 
+                                train_steps, test_steps, 
+                                train_losses, train_accuracies, 
+                                test_losses, test_accuracies)
+                                
+                # set running training loss and number of correct predictions to 0
+                running_loss = 0
+                running_correct = 0
+                running_tot = 0
+
                 # Make sure dropout and grads are on for training
                 model.train()
+
+            # increase the step        
+            step += 1
 
 
 def load_tensors():
@@ -158,19 +199,6 @@ def load_model(model, model_dir='../../models'):
         print("Warning: no previous version of the model exists. Creating an empty (v0) model...".format(version))
     
     return model
-
-def get_latest_version(model_dir):
-    """
-    Gets the latest version of the model.
-    If no previous version exists, it returns -1.
-    """
-    version = -1
-    for folder in os.listdir(model_dir):
-        if folder.startswith('v'):
-            curr_version = int(folder[1:])
-            version = max(version, curr_version)
-
-    return version
 
 def main():
     # load model
