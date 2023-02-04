@@ -22,18 +22,18 @@ def load_mnist(input_filepath):
 
     print(f"\nLoading data from: {input_filepath}")
     data = np.load(input_filepath + "/train_1.npz")
-    train = data["images"]
-    print(f"Shape of training data: {train.shape}")
+    train_images = data["images"]
+    print(f"Shape of training data: {train_images.shape}")
     train_labels = data["labels"]
     _ = data["allow_pickle"]
 
     data = np.load(input_filepath + "/test.npz")
-    test = data["images"]
-    print(f"Shape of test data: {test.shape}")
+    test_images = data["images"]
+    print(f"Shape of test data: {test_images.shape}")
     test_labels = data["labels"]
     _ = data["allow_pickle"]
 
-    return [train, train_labels, test, test_labels]
+    return [train_images, train_labels, test_images, test_labels]
 
 def normalize(image, m2=0, s2=1):
     """
@@ -62,12 +62,12 @@ def preprocess(data):
     #                     std=[0.229, 0.224, 0.225])
     #             ])
     
-    train, train_labels, test, test_labels = data
+    train_images, train_labels, test_images, test_labels = data
 
     # normalize features
     print("Preprocessing features")
-    out_data = []
-    for x in [train, test]:
+    out_images = []
+    for x in [train_images, test_images]:
         print(np.shape(x))
         # current mean and std dev
         m1 = np.mean(x, axis=(1,2)).reshape(-1, 1)
@@ -84,7 +84,7 @@ def preprocess(data):
         s2 = np.std(x_norm, axis=(1,2)).reshape(-1, 1)
         # print(f"Shape of μ, σ vector (should be 5000x1): {np.shape(m2), np.shape(s2)}")
 
-        out_data.append(x)
+        out_images.append(x)
 
     # normalize labels
     print("Preprocessing labels")
@@ -106,9 +106,9 @@ def preprocess(data):
         s2 = np.std(x_norm).reshape(-1, 1)
         # print(f"Shape of μ, σ vector (should be 1x1): {np.shape(m2), np.shape(s2)}")
 
-        out_data.append(x)
+        out_labels.append(x)
 
-    return out_data
+    return [out_images[0], out_labels[0], out_images[1], out_labels[1]]
 
 
 def save_data(data, output_filepath):
@@ -117,10 +117,10 @@ def save_data(data, output_filepath):
     """
 
     print(f"\nSaving data at: {output_filepath}")
-    train, train_labels, test, test_labels = data
-    torch.save(train, output_filepath + "/train.pt")
+    train_images, train_labels, test_images, test_labels = data
+    torch.save(train_images, output_filepath + "/train_images.pt")
     torch.save(train_labels, output_filepath + "/train_labels.pt")
-    torch.save(test, output_filepath + "/test.pt")
+    torch.save(test_images, output_filepath + "/test_images.pt")
     torch.save(test_labels, output_filepath + "/test_labels.pt")
 
 
