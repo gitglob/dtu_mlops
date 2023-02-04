@@ -1,3 +1,7 @@
+# Ignore earlier figures and models
+reports/models/v*
+reports/figures/v*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -58,7 +58,7 @@ def train(
 ) -> None:
 
     # check which version of the model we are running
-    model_relative_dir = "../../models"
+    model_relative_dir = "models"
     version = get_latest_version(model_relative_dir) + 1
 
     # train the network
@@ -74,92 +74,117 @@ def train(
     train_accuracies = []
     test_losses = []
     test_accuracies = []
-    for e in range(epochs):
-        # Model in training mode, dropout is on
-        model.train()
-        for images, labels in trainloader:
-            train_steps.append(step)
-            
-            # Flatten images into a 784 long vector
-            images.resize_(images.size()[0], 784)
-            
-            optimizer.zero_grad()
-            
-            output = model.forward(images)
-            ps = torch.exp(output)
-            _, predicted = torch.max(ps, dim=1)
-
-            # calculate loss
-            loss = criterion(output, labels)
-            loss.backward()
-            optimizer.step()
-            
-            # calculate running loss
-            running_loss += loss.item()
-            
-            # calculate running correct correct and total predictions
-            running_correct += (predicted == labels).sum().item()
-            running_tot += len(labels)
-
-            # log current training loss and accuracy
-            train_losses.append(loss.item())
-            train_accuracies.append((predicted == labels).sum().item() / len(labels))
-
-
-            if step % print_every == 0:
-                test_steps.append(step)
-                # Model in inference mode, dropout is off
-                model.eval()
+    try:
+        for e in range(epochs):
+            # Model in training mode, dropout is on
+            model.train()
+            for images, labels in trainloader:
+                train_steps.append(step)
                 
-                # Turn off gradients for validation, will speed up inference
-                with torch.no_grad():
-                    test_loss, accuracy = validation(model, testloader, criterion)
+                # Flatten images into a 784 long vector
+                images.resize_(images.size()[0], 784)
                 
-                print("Epoch: {}/{}.. ".format(e+1, epochs),
-                      "Training Loss: {:.3f}.. ".format(running_loss/print_every),
-                      "Training Accuracy: {:.3f}.. ".format(running_correct/running_tot),
-                      "Test Loss: {:.3f}.. ".format(test_loss/len(testloader)),
-                      "Test Accuracy: {:.3f}".format(accuracy/len(testloader)))
+                optimizer.zero_grad()
+                
+                output = model.forward(images)
+                ps = torch.exp(output)
+                _, predicted = torch.max(ps, dim=1)
 
-                # log current loss and accuracy
-                test_losses.append(test_loss/print_every)
-                test_accuracies.append(accuracy/len(testloader))
-                              
-                # save the model every logging period
-                save_model(model, version)
+                # calculate loss
+                loss = criterion(output, labels)
+                loss.backward()
+                optimizer.step()
+                
+                # calculate running loss
+                running_loss += loss.item()
+                
+                # calculate running correct correct and total predictions
+                running_correct += (predicted == labels).sum().item()
+                running_tot += len(labels)
 
-                # visualize and save the loss and accuracy thus far
-                visualize_metrics(e, print_every, 
-                                train_steps, test_steps, 
-                                train_losses, train_accuracies, 
-                                test_losses, test_accuracies)
+                # log current training loss and accuracy
+                train_losses.append(loss.item())
+                train_accuracies.append((predicted == labels).sum().item() / len(labels))
+
+
+                if step % print_every == 0:
+                    test_steps.append(step)
+                    # Model in inference mode, dropout is off
+                    model.eval()
+                    
+                    # Turn off gradients for validation, will speed up inference
+                    with torch.no_grad():
+                        test_loss, accuracy = validation(model, testloader, criterion)
+                    
+                    print("Epoch: {}/{}.. ".format(e+1, epochs),
+                        "Training Loss: {:.3f}.. ".format(running_loss/print_every),
+                        "Training Accuracy: {:.3f}.. ".format(running_correct/running_tot),
+                        "Test Loss: {:.3f}.. ".format(test_loss/len(testloader)),
+                        "Test Accuracy: {:.3f}".format(accuracy/len(testloader)))
+
+                    # log current loss and accuracy
+                    test_losses.append(test_loss/print_every)
+                    test_accuracies.append(accuracy/len(testloader))
                                 
-                # set running training loss and number of correct predictions to 0
-                running_loss = 0
-                running_correct = 0
-                running_tot = 0
+                    # save the model every logging period
+                    save_model(model, version)
 
-                # Make sure dropout and grads are on for training
-                model.train()
+                    # visualize and save the loss and accuracy thus far
+                    visualize_metrics(e, print_every, 
+                                    train_steps, test_steps, 
+                                    train_losses, train_accuracies, 
+                                    test_losses, test_accuracies)
 
-            # increase the step        
-            step += 1
+                    # set running training loss and number of correct predictions to 0
+                    running_loss = 0
+                    running_correct = 0
+                    running_tot = 0
 
+                    # Make sure dropout and grads are on for training
+                    model.train()
 
-def load_tensors():
+                # increase the step        
+                step += 1
+    # if the training ends or is interrupted, we want the model and the last visualizations to be saved in the "latest" folder
+    except KeyboardInterrupt:
+        save_latest_model(model)
+        visualize_metrics(e, print_every, 
+                        train_steps, test_steps, 
+                        train_losses, train_accuracies, 
+                        test_losses, test_accuracies,
+                        last = True)
+
+    save_latest_model(model)
+    visualize_metrics(e, print_every, 
+                    train_steps, test_steps, 
+                    train_losses, train_accuracies, 
+                    test_losses, test_accuracies,
+                    last = True)
+
+def save_latest_model(model, model_dir='models'):
+    """
+    Saves the latest model in the "latest" fubfolder in the "models" folder
+    """
+    version = get_latest_version()
+    if version > -1:
+        latest_model_path = os.path.join(model_dir, 'latest')
+        if not os.path.exists(latest_model_path):
+            os.makedirs(latest_model_path)
+        print(f"Saving LATEST model in directory: {latest_model_path}/model.pth")
+        torch.save(model.state_dict(), latest_model_path + "/model.pth")
+
+def load_tensors(datadir="data/processed"):
     """
     Loads the saved tensors in data/processed
     """
 
     # alternative to move to the preset directory
-    os.chdir("../../data/processed")
-    datadir = os.getcwd()
     print(f"Loading data from: {datadir}")
 
-    train_images = torch.load('train_images.pt')
-    train_labels = torch.load('train_labels.pt')
-    test_images = torch.load('test_images.pt')
-    test_labels = torch.load('test_labels.pt')
+    train_images = torch.load(datadir + '/train_images.pt')
+    train_labels = torch.load(datadir + '/train_labels.pt')
+    test_images = torch.load(datadir + '/test_images.pt')
+    test_labels = torch.load(datadir + '/test_labels.pt')
 
     # Create the custom dataset object
     train_dataset = MnistDataset(train_images, train_labels)
@@ -171,7 +196,7 @@ def load_tensors():
 
     return trainloader, testloader
 
-def save_model(model, version, model_dir='../../models'):
+def save_model(model, version, model_dir='models'):
     """
     Saves the model in a subfolder in the "models" folder that is named after the version of the model (i.e. v1, v2, v3 etc...)
     """
@@ -183,7 +208,7 @@ def save_model(model, version, model_dir='../../models'):
     torch.save(model.state_dict(), model_path)
     
 
-def load_model(model, model_dir='../../models'):
+def load_model(model, model_dir='models'):
     """
     Loads the last saved version of the model, or if there is none, does nothing.
     """
