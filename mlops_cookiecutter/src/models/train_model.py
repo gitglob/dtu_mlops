@@ -1,5 +1,5 @@
-import click
 import os
+import sys
 from typing import Callable, Tuple, Union, Optional, List
 import torch
 from torch import nn
@@ -17,7 +17,7 @@ def validation(
     for images, labels in testloader:
         images = images.resize_(images.size()[0], 784)
 
-        output = model.forward(images)
+        features, output = model.forward(images)
         test_loss += criterion(output, labels).item()
 
         ## Calculating the accuracy 
@@ -70,7 +70,7 @@ def train(
                 
                 optimizer.zero_grad()
                 
-                output = model.forward(images)
+                features, output = model.forward(images)
                 ps = torch.exp(output)
                 _, predicted = torch.max(ps, dim=1)
 
@@ -114,7 +114,7 @@ def train(
                     save_model(model, version)
 
                     # visualize and save the loss and accuracy thus far
-                    visualize_metrics(e, print_every, 
+                    visualize_metrics(e, "latest", 
                                     train_steps, test_steps, 
                                     train_losses, train_accuracies, 
                                     test_losses, test_accuracies)
@@ -132,18 +132,16 @@ def train(
     # if the training ends or is interrupted, we want the model and the last visualizations to be saved in the "latest" folder
     except KeyboardInterrupt:
         save_latest_model(model)
-        visualize_metrics(e, print_every, 
+        visualize_metrics(e, "latest", 
                         train_steps, test_steps, 
                         train_losses, train_accuracies, 
-                        test_losses, test_accuracies,
-                        last = True)
+                        test_losses, test_accuracies)
 
     save_latest_model(model)
-    visualize_metrics(e, print_every, 
+    visualize_metrics(e, "latest", 
                     train_steps, test_steps, 
                     train_losses, train_accuracies, 
-                    test_losses, test_accuracies,
-                    last = True)
+                    test_losses, test_accuracies)
 
 def main():
     # load model
@@ -167,4 +165,12 @@ def main():
 
 
 if __name__ == '__main__':
+
+    # append sibling dir to system path
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    import_dir = os.path.join(current_dir, '..', 'visualization')
+    sys.path.append(import_dir)
+
+    from visualize import visualize_metrics
+
     main()

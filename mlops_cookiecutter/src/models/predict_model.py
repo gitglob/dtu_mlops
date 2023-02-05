@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import argparse
 from pathlib import Path
-from dotenv import find_dotenv, load_dotenv
 
 import numpy as np
 import torch
@@ -84,7 +83,7 @@ def predict(model, dataloader):
         images = images.resize_(images.size()[0], 784)
         labels = labels.flatten()
 
-        output = model.forward(images)
+        features, output = model.forward(images)
         ps = torch.exp(output)
         _, predicted = torch.max(ps, dim=1)
 

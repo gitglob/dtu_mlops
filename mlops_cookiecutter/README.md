@@ -55,3 +55,13 @@ Project Organization
 --------
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+
+
+--------
+All commands should be run from the base parent directory mlops_cookiecutter.
+
+Train the model: python src/models/train_model.py
+Test the model on unseen data: python src/models/predict_model.py
+Visualize the 2d features of the training dat: python src/visualization/visualize.py
+
+In case anything cannot run and you get an error: "error: no commands supplied", just run: python src/<subdir>/<script.py> install
