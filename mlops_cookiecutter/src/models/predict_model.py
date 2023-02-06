@@ -4,15 +4,16 @@ from pathlib import Path
 
 import numpy as np
 import torch
+from model import MyModel
 from torch import nn
 from torch.utils.data import DataLoader
+from utils.model_utils import MnistDataset, load_model
 
-from model import MyModel
-from utils.model_utils import load_model, MnistDataset
 
 def preprocess(data):
     """
-    Convert numpy data (images) into pytorch tensors and normalizes them with a mean of 0 and std. deviation of 1.
+    Convert numpy data (images) into pytorch tensors and normalizes them with a mean of 0
+    and std. deviation of 1.
 
     The formula used is taken from: https://stats.stackexchange.com/questions/46429/transform-data-to-desired-mean-and-standard-deviation
 
@@ -28,25 +29,28 @@ def preprocess(data):
     """
 
     print("\nPreprocessing data: Converting to tensor and normalizing with μ=0 and σ=1")
-   
+
     images, labels = data
 
     # normalize features
     print("Preprocessing features")
     # current mean and std dev
-    m1 = np.mean(images, axis=(1,2)).reshape(-1, 1)
-    s1 = np.std(images, axis=(1,2)).reshape(-1, 1)
+    m1 = np.mean(images, axis=(1, 2)).reshape(-1, 1)
+    s1 = np.std(images, axis=(1, 2)).reshape(-1, 1)
     # print(f"Shape of μ, σ vector (should be 5000x1): {np.shape(m1), np.shape(s1)}")
     # desired mean and std dev
     m2 = 0
     s2 = 1
 
-    normalizer = lambda xi, mi, si: m2 + ((xi - mi) * (s2/si))
-    images_norm = np.array([normalizer(x_i, m_i, s_i) for (x_i, m_i, s_i) in zip(images, m1, s1)])
-    m2 = np.mean(images_norm, axis=(1,2)).reshape(-1, 1)
-    s2 = np.std(images_norm, axis=(1,2)).reshape(-1, 1)
-    # print(f"Shape of μ, σ vector (should be 5000x1): {np.shape(m2), np.shape(s2)}")
+    def normalizer(xi, mi, si):
+        return m2 + ((xi - mi) * (s2 / si))
 
+    images_norm = np.array(
+        [normalizer(x_i, m_i, s_i) for (x_i, m_i, s_i) in zip(images, m1, s1)]
+    )
+    m2 = np.mean(images_norm, axis=(1, 2)).reshape(-1, 1)
+    s2 = np.std(images_norm, axis=(1, 2)).reshape(-1, 1)
+    # print(f"Shape of μ, σ vector (should be 5000x1): {np.shape(m2), np.shape(s2)}")
 
     # normalize labels
     print("Preprocessing labels")
@@ -58,7 +62,7 @@ def preprocess(data):
     m2 = 0
     s2 = 1
 
-    labels_norm = m2 + ((labels - m1) * (s2/s1))
+    labels_norm = m2 + ((labels - m1) * (s2 / s1))
     labels_norm = labels.reshape(-1, 1)
     m2 = np.mean(labels_norm).reshape(-1, 1)
     s2 = np.std(labels_norm).reshape(-1, 1)
@@ -67,6 +71,7 @@ def preprocess(data):
     data_norm = [images_norm, labels_norm]
 
     return data_norm
+
 
 def load_data(input_filepath):
     """
@@ -94,6 +99,7 @@ def load_data(input_filepath):
 
     return data
 
+
 def predict(model, dataloader):
     """
     Create predictions based on the latest version of the trained model.
@@ -107,7 +113,7 @@ def predict(model, dataloader):
 
     Returns
     -------
-    None    
+    None
     """
 
     correct = 0
@@ -130,6 +136,7 @@ def predict(model, dataloader):
 
     print(f"Mean Loss: {loss/len(dataloader)} , Accuracy: {correct/len(dataloader)}")
 
+
 def data2dataloader(data):
     """
     Converts the numpy array data to torch tensors and then to a dataloader.
@@ -144,7 +151,7 @@ def data2dataloader(data):
     dataloader: torch.utils.data.DataLoader
         the dataloader with the test data
     """
-    
+
     images, labels = data
     images = np.array(images)
     labels = np.array(labels)
@@ -156,6 +163,7 @@ def data2dataloader(data):
     dataloader = DataLoader(dataset, batch_size=32, shuffle=False, num_workers=2)
 
     return dataloader
+
 
 def main(model_dir, data_fpath):
     """
@@ -170,7 +178,7 @@ def main(model_dir, data_fpath):
 
     Returns
     -------
-    None    
+    None
     """
     # load model
     model = MyModel()
@@ -180,17 +188,32 @@ def main(model_dir, data_fpath):
     data = load_data(data_fpath)
     data = preprocess(data)
     dataloader = data2dataloader(data)
-    
+
     # predict the labels of the data
     predict(model, dataloader)
 
     return
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # parse arguments
-    parser = argparse.ArgumentParser(description='Predict new data with the trained model.')
-    parser.add_argument('model_dir', nargs='?', type=str, default="models", help='the path to the trained model <model.pth>')
-    parser.add_argument('data_fpath', nargs='?', type=str, default="data/raw/train_2.npz", help='the path to the .npz data')
+    parser = argparse.ArgumentParser(
+        description="Predict new data with the trained model."
+    )
+    parser.add_argument(
+        "model_dir",
+        nargs="?",
+        type=str,
+        default="models",
+        help="the path to the trained model <model.pth>",
+    )
+    parser.add_argument(
+        "data_fpath",
+        nargs="?",
+        type=str,
+        default="data/raw/train_2.npz",
+        help="the path to the .npz data",
+    )
 
     args = parser.parse_args()
     model_dir = args.model_dir

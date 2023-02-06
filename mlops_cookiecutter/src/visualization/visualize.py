@@ -1,21 +1,28 @@
 import argparse
-from pathlib import Path
 import os
 import sys
+from pathlib import Path
+
 import matplotlib.pyplot as plt
-import torch
 import numpy as np
-from torch import nn
 from sklearn.manifold import TSNE
 
-def visualize_metrics(e, version,
-                    train_steps, test_steps, 
-                    train_losses, train_accuracies, 
-                    test_losses, test_accuracies, 
-                    model_dir="models", 
-                    vis_dir='reports/figures/metrics'):
+
+def visualize_metrics(
+    e,
+    version,
+    train_steps,
+    test_steps,
+    train_losses,
+    train_accuracies,
+    test_losses,
+    test_accuracies,
+    model_dir="models",
+    vis_dir="reports/figures/metrics",
+):
     """
-    Visualizes and saves the figure of the loss and accuracy over time of the trained model in reports/difures/metrics.
+    Visualizes and saves the figure of the loss and accuracy over time of the trained
+    model in reports/difures/metrics.
 
     Parameters
     ----------
@@ -26,7 +33,8 @@ def visualize_metrics(e, version,
     train_steps : int
         the number of batches that have been processed
     test_steps : int
-        the number of times the model has been evaluated on the validation data with the testloader
+        the number of times the model has been evaluated on the validation data with the
+        testloader
     train_losses : numpy.array
         the loss over the train_steps
     train_accuracies : numpy.array
@@ -48,18 +56,23 @@ def visualize_metrics(e, version,
     if version == "latest":
         vis_version_dir = os.path.join(vis_dir, version)
     else:
-        vis_version_dir = os.path.join(vis_dir, 'v{}'.format(version))
+        vis_version_dir = os.path.join(vis_dir, "v{}".format(version))
 
     fig, (ax1, ax2) = plt.subplots(2)
 
-    ax1.plot(train_steps, train_losses[0:len(train_steps)], label="Train")
-    ax1.plot(test_steps, test_losses[0:len(test_steps)], "-*", label="Validation")
+    ax1.plot(train_steps, train_losses[0 : len(train_steps)], label="Train")
+    ax1.plot(test_steps, test_losses[0 : len(test_steps)], "-*", label="Validation")
     ax1.set_ylabel("NLL Loss")
     ax1.set_title("Loss")
     ax1.legend()
 
-    ax2.plot(train_steps, train_accuracies[0:len(train_steps)], label="Train")
-    ax2.plot(test_steps, test_accuracies[0:len(test_steps)], "-*", label="Validation")
+    ax2.plot(train_steps, train_accuracies[0 : len(train_steps)], label="Train")
+    ax2.plot(
+        test_steps,
+        test_accuracies[0 : len(test_steps)],
+        "-*",
+        label="Validation",
+    )
     ax2.set_ylabel("Accuracy")
     ax2.set_title("Accuracy")
     ax2.legend()
@@ -71,16 +84,15 @@ def visualize_metrics(e, version,
     if not os.path.exists(vis_version_dir):
         os.makedirs(vis_version_dir)
     figdir = vis_version_dir + "/metrics.png"
-    if version == "last":
+    if version != "latest":
         print(f"Saving figure in: {figdir}")
     else:
         print(f"Saving LATEST figure in: {figdir}")
     plt.savefig(figdir)
     plt.close()
 
-def visualize_features(features,
-                    model_dir='models',
-                    vis_dir='reports/figures/features'):
+
+def visualize_features(features, vis_dir="reports/figures/features"):
     """
     Visualizes and saves the 2d features of the training data in reports/difures/features.
 
@@ -88,8 +100,6 @@ def visualize_features(features,
     ----------
     features : array_like
         the 2d features of the dataset
-    model_dir :
-        the directory where the models are saved
     vis_dir : vis_dir, optional
         the directory where the feature plot should be saved
 
@@ -98,12 +108,11 @@ def visualize_features(features,
     None
     """
 
-    version = "latest"
-    vis_version_dir = os.path.join(vis_dir, 'latest')
+    vis_version_dir = os.path.join(vis_dir, "latest")
 
     fig, ax = plt.subplots()
 
-    ax.scatter(features[:,0], features[:,1], s=1)
+    ax.scatter(features[:, 0], features[:, 1], s=1)
     ax.set_xlabel("Dimension #1")
     ax.set_ylabel("Dimension #2")
     ax.set_title("2D features from training data")
@@ -115,9 +124,11 @@ def visualize_features(features,
     plt.savefig(figdir)
     plt.close()
 
+
 def extract_features(model, dataloader):
     """
-    Extract the 2d features of the training data using sklearn's TSNE as a feature extractor.
+    Extract the 2d features of the training data using sklearn's TSNE as a feature
+    extractor.
 
     Parameters
     ----------
@@ -132,7 +143,9 @@ def extract_features(model, dataloader):
         the 2d features
     """
 
-    feature_extractor = TSNE(n_components=2, learning_rate='auto', init='random', perplexity=3)
+    feature_extractor = TSNE(
+        n_components=2, learning_rate="auto", init="random", perplexity=3
+    )
 
     features_2d_list = []
     model.eval()
@@ -148,6 +161,7 @@ def extract_features(model, dataloader):
 
     features_out = np.array(features_2d_list)
     return features_out
+
 
 def main(model_dir, data_fpath):
     """
@@ -183,11 +197,26 @@ def main(model_dir, data_fpath):
 
     return
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # parse arguments
-    parser = argparse.ArgumentParser(description='Make visualization on the trained data with the trained model.')
-    parser.add_argument('model_dir', nargs='?', type=str, default="models", help='the path to the trained model <model.pth>')
-    parser.add_argument('data_fpath', nargs='?', type=str, default="data/raw/train_1.npz", help='the path to the .npz data')
+    parser = argparse.ArgumentParser(
+        description="Make visualization on the trained data with the trained model."
+    )
+    parser.add_argument(
+        "model_dir",
+        nargs="?",
+        type=str,
+        default="models",
+        help="the path to the trained model <model.pth>",
+    )
+    parser.add_argument(
+        "data_fpath",
+        nargs="?",
+        type=str,
+        default="data/raw/train_1.npz",
+        help="the path to the .npz data",
+    )
 
     args = parser.parse_args()
     model_dir = args.model_dir
@@ -198,12 +227,12 @@ if __name__ == '__main__':
 
     # append sibling dir to system path
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    import_dir = os.path.join(current_dir, '..', 'models')
+    import_dir = os.path.join(current_dir, "..", "models")
     sys.path.append(import_dir)
 
     # load functions from "models" sibling directory
-    from utils.model_utils import load_model, get_latest_version
     from model import MyModel
-    from predict_model import data2dataloader, load_model, load_data, preprocess
+    from predict_model import data2dataloader, load_data, preprocess
+    from utils.model_utils import load_model
 
     main(model_dir, data_fpath)

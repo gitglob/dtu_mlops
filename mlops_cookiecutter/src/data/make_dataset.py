@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
-import click
 import logging
-from pathlib import Path
-from dotenv import find_dotenv, load_dotenv
-
 import os
+from pathlib import Path
+
+import click
 import numpy as np
 import torch
-from torch import save, load
-import torchvision.transforms as T
-import torchvision.transforms.functional as F
+from dotenv import find_dotenv, load_dotenv
+
 
 def load_mnist(mnist_dir):
     """
@@ -23,8 +21,8 @@ def load_mnist(mnist_dir):
     Returns
     -------
     data_out : list
-        4d list with the numpy arrays containing the training and validation data 
-        [train_images, train_labels, validation_images, validation_labels].
+        4d list with the numpy arrays containing the training and validation
+        data [train_images, train_labels, validation_images, validation_labels].
     """
 
     print(f"\nLoading MNIST data from: {mnist_dir}")
@@ -40,9 +38,15 @@ def load_mnist(mnist_dir):
     validation_labels = data["labels"]
     _ = data["allow_pickle"]
 
-    data_out = [train_images, train_labels, validation_images, validation_labels]
+    data_out = [
+        train_images,
+        train_labels,
+        validation_images,
+        validation_labels,
+    ]
 
     return data_out
+
 
 def normalize(image, m2=0, s2=1):
     """
@@ -66,37 +70,40 @@ def normalize(image, m2=0, s2=1):
     m1 = np.mean(image)
     s1 = np.std(image)
 
-    image_norm = m2 + ((image - m1) * (s2/s1))
+    image_norm = m2 + ((image - m1) * (s2 / s1))
 
     return image_norm
 
+
 def preprocess(data):
     """
-    Convert numpy data (images) into pytorch tensors and normalizes them with a mean of 0 and std. deviation of 1.
+    Convert numpy data (images) into pytorch tensors and normalizes them with a
+    mean of 0 and std. deviation of 1.
 
     Source: https://stats.stackexchange.com/questions/46429/transform-data-to-desired-mean-and-standard-deviation
-    
+
     Parameters
     ----------
     data : list
-        the MNIST data in the form of a 4d list with numpy arrays 
+        the MNIST data in the form of a 4d list with numpy arrays
         [train_images, train_labels, validation_images, validation_labels]
 
     Returns
     -------
     data_out : list
-        the MNIST data in the same form of a 4d list, but with normalized tensors with mean=0 and std_dev=1
+        the MNIST data in the same form of a 4d list, but with normalized
+        tensors with mean=0 and std_dev=1
     """
 
     print("\nPreprocessing data: Converting to tensor and normalizing with μ=0 and σ=1")
 
-    # transforms = T.Compose([ 
+    # transforms = T.Compose([
     #                   T.ToTensor(),
     #                   T.Normalize(
     #                     mean=[0.485, 0.456, 0.406],
     #                     std=[0.229, 0.224, 0.225])
     #             ])
-    
+
     train_images, train_labels, valid_images, valid_labels = data
 
     # normalize features
@@ -104,17 +111,19 @@ def preprocess(data):
     out_images = []
     for x in [train_images, valid_images]:
         # current mean and std dev
-        m1 = np.mean(x, axis=(1,2)).reshape(-1, 1)
-        s1 = np.std(x, axis=(1,2)).reshape(-1, 1)
+        m1 = np.mean(x, axis=(1, 2)).reshape(-1, 1)
+        s1 = np.std(x, axis=(1, 2)).reshape(-1, 1)
         # print(f"Shape of μ, σ vector (should be 5000x1): {np.shape(m1), np.shape(s1)}")
         # desired mean and std dev
         m2 = 0
         s2 = 1
 
-        normalizer = lambda xi, mi, si: m2 + ((xi - mi) * (s2/si))
-        x_norm = np.array([normalizer(x_i, m_i, s_i) for (x_i, m_i, s_i) in zip(x, m1, s1)])
-        m2 = np.mean(x_norm, axis=(1,2)).reshape(-1, 1)
-        s2 = np.std(x_norm, axis=(1,2)).reshape(-1, 1)
+        normalizer = lambda xi, mi, si: m2 + ((xi - mi) * (s2 / si))
+        x_norm = np.array(
+            [normalizer(x_i, m_i, s_i) for (x_i, m_i, s_i) in zip(x, m1, s1)]
+        )
+        m2 = np.mean(x_norm, axis=(1, 2)).reshape(-1, 1)
+        s2 = np.std(x_norm, axis=(1, 2)).reshape(-1, 1)
         # print(f"Shape of μ, σ vector (should be 5000x1): {np.shape(m2), np.shape(s2)}")
 
         out_images.append(x)
@@ -131,7 +140,7 @@ def preprocess(data):
         m2 = 0
         s2 = 1
 
-        x_norm = m2 + ((x - m1) * (s2/s1))
+        x_norm = m2 + ((x - m1) * (s2 / s1))
         x_norm = x.reshape(-1, 1)
         m2 = np.mean(x_norm).reshape(-1, 1)
         s2 = np.std(x_norm).reshape(-1, 1)
@@ -147,12 +156,12 @@ def preprocess(data):
 def save_data(data, save_dir):
     """
     Saves the incoming normalized pytorch tensors in the specified filepath.
-    
+
     Parameters
     ----------
     data : list
-        the MNIST data in the form of a 4d list with normalized tensors (m=0, s=1) 
-        [train_images, train_labels, validation_images, validation_labels]
+        the MNIST data in the form of a 4d list with normalized tensors (m=0,
+        s=1) [train_images, train_labels, validation_images, validation_labels]
     save_dir : str
         the directory where the normalized tensors should be saved in as .pt files
 
@@ -166,7 +175,7 @@ def save_data(data, save_dir):
     # if the save_dir doesn't exist, create and save it, along with an empty .gitkeep file
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-        open(save_dir+"/.gitkeep", "w").close()
+        open(save_dir + "/.gitkeep", "w").close()
 
     train_images, train_labels, valid_images, valid_labels = data
     torch.save(train_images, save_dir + "/train_images.pt")
@@ -176,20 +185,25 @@ def save_data(data, save_dir):
 
 
 @click.command()
-@click.argument('input_datadir',
-                default="/home/glob/Documents/github/dtu_mlops/mlops_cookiecutter/data/raw", 
-                type=click.Path(exists=True))
-@click.argument('output_datadir', 
-                default="/home/glob/Documents/github/dtu_mlops/mlops_cookiecutter/data/processed", 
-                type=click.Path())
+@click.argument(
+    "input_datadir",
+    default="/home/glob/Documents/github/dtu_mlops/mlops_cookiecutter/data/raw",
+    type=click.Path(exists=True),
+)
+@click.argument(
+    "output_datadir",
+    default="/home/glob/Documents/github/dtu_mlops/mlops_cookiecutter/data/processed",
+    type=click.Path(),
+)
 def main(input_datadir, output_datadir):
     """
-    Runs data processing scripts to turn raw data from (../raw) into cleaned data ready to be analyzed (saved in ../processed).
+    Runs data processing scripts to turn raw data from (../raw) into cleaned data ready
+    to be analyzed (saved in ../processed).
 
     Parameters
     ----------
     input_datadir : str, argument
-        the MNIST data in the form of a 4d list with normalized tensors (m=0, s=1) 
+        the MNIST data in the form of a 4d list with normalized tensors (m=0, s=1)
         [train_images, train_labels, validation_images, validation_labels]
     output_datadir : str, argument
         the directory where the normalized tensors should be saved in as .pt files
@@ -199,17 +213,18 @@ def main(input_datadir, output_datadir):
     None
     """
     logger = logging.getLogger(__name__)
-    logger.info('making final data set from raw data')
+    logger.info("making final data set from raw data")
 
     data = load_mnist(input_datadir)
     data = preprocess(data)
     save_data(data, output_datadir)
 
-    return 
+    return
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # setup logging format
-    log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     logging.basicConfig(level=logging.INFO, format=log_fmt)
 
     # not used in this stub but often useful for finding various files

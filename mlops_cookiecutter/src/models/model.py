@@ -1,7 +1,8 @@
-from torch import nn
 import torch.nn.functional as F
+from torch import nn
 
-class MyModel(nn.Module):    
+
+class MyModel(nn.Module):
     """
     A class for a NN to train and make predictions on MNIST data.
 
@@ -33,11 +34,11 @@ class MyModel(nn.Module):
 
         self.dropout = nn.Dropout(0.5)
         self.softmax = nn.Softmax()
-        
+
     def forward(self, x):
         """
         Does a forward pass on the NN
-        
+
         Parameters
         ----------
         x : torch.tensor
@@ -60,13 +61,13 @@ class MyModel(nn.Module):
         # self.pshape(x)
         x = F.log_softmax(self.out_fc(x), dim=0)
         # self.pshape(x)
-        
+
         return features, x
 
     def pshape(self, x):
         """
         Prints the shape of the input tensor
-        
+
         Parameters
         ----------
         x : torch.tensor
