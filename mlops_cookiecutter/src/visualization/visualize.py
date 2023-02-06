@@ -12,9 +12,37 @@ def visualize_metrics(e, version,
                     train_steps, test_steps, 
                     train_losses, train_accuracies, 
                     test_losses, test_accuracies, 
-                    model_dir="models", vis_dir='reports/figures/metrics'):
+                    model_dir="models", 
+                    vis_dir='reports/figures/metrics'):
     """
-    Visualizes and saves the figure of the loss and accuracy over time of the trained model.
+    Visualizes and saves the figure of the loss and accuracy over time of the trained model in reports/difures/metrics.
+
+    Parameters
+    ----------
+    e : array_like
+        the 2d features of the dataset
+    version :
+        the version of the model
+    train_steps : int
+        the number of batches that have been processed
+    test_steps : int
+        the number of times the model has been evaluated on the validation data with the testloader
+    train_losses : numpy.array
+        the loss over the train_steps
+    train_accuracies : numpy.array
+        the accuracy over the train_steps
+    test_losses : numpy.array
+        the loss over the test_steps
+    test_accuracies : numpy.array
+        the accuracy over the test_steps
+    model_dir : str, optional
+        the directory where the models are saved
+    vis_dir : str, optional
+        the directory where the metric plot should be saved
+
+    Returns
+    -------
+    None
     """
 
     if version == "latest":
@@ -54,7 +82,20 @@ def visualize_features(features,
                     model_dir='models',
                     vis_dir='reports/figures/features'):
     """
-    Visualizes and saves the figure of the loss and accuracy over time of the trained model.
+    Visualizes and saves the 2d features of the training data in reports/difures/features.
+
+    Parameters
+    ----------
+    features : array_like
+        the 2d features of the dataset
+    model_dir :
+        the directory where the models are saved
+    vis_dir : vis_dir, optional
+        the directory where the feature plot should be saved
+
+    Returns
+    -------
+    None
     """
 
     version = "latest"
@@ -76,7 +117,19 @@ def visualize_features(features,
 
 def extract_features(model, dataloader):
     """
-    Create predictions based on the latest version of the trained model.
+    Extract the 2d features of the training data using sklearn's TSNE as a feature extractor.
+
+    Parameters
+    ----------
+    model : nn.Module
+        the trained neural network
+    dataloader : torch.utils.data.Dataloader
+        the dataloader that is used to load the training data
+
+    Returns
+    -------
+    features_out : numpy.array
+        the 2d features
     """
 
     feature_extractor = TSNE(n_components=2, learning_rate='auto', init='random', perplexity=3)
@@ -93,12 +146,27 @@ def extract_features(model, dataloader):
         features_2d = feature_extractor.fit_transform(features)
         features_2d_list.extend(features_2d.tolist())
 
-    return np.array(features_2d_list)
+    features_out = np.array(features_2d_list)
+    return features_out
 
-def main(model_fpath, data_fpath):
+def main(model_dir, data_fpath):
+    """
+    Calls all the necessary functions to visualize the 2d features of the training data.
+
+    Parameters
+    ----------
+    model_dir : str
+        the directory of the trained models
+    data_fpath : str
+        the path to the data the network was trained upon
+
+    Returns
+    -------
+    None
+    """
     # load model
     model = MyModel()
-    model = load_model(model, model_fpath)
+    model = load_model(model, model_dir)
 
     # load data
     data = load_data(data_fpath)
@@ -118,11 +186,11 @@ def main(model_fpath, data_fpath):
 if __name__ == '__main__':
     # parse arguments
     parser = argparse.ArgumentParser(description='Make visualization on the trained data with the trained model.')
-    parser.add_argument('model_fpath', nargs='?', type=str, default="models", help='the path to the trained model <model.pth>')
+    parser.add_argument('model_dir', nargs='?', type=str, default="models", help='the path to the trained model <model.pth>')
     parser.add_argument('data_fpath', nargs='?', type=str, default="data/raw/train_1.npz", help='the path to the .npz data')
 
     args = parser.parse_args()
-    model_fpath = args.model_fpath
+    model_dir = args.model_dir
     data_fpath = args.data_fpath
 
     # not used in this stub but often useful for finding various files
@@ -138,4 +206,4 @@ if __name__ == '__main__':
     from model import MyModel
     from predict_model import data2dataloader, load_model, load_data, preprocess
 
-    main(model_fpath, data_fpath)
+    main(model_dir, data_fpath)

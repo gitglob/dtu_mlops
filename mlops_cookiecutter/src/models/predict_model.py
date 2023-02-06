@@ -13,7 +13,18 @@ from utils.model_utils import load_model, MnistDataset
 def preprocess(data):
     """
     Convert numpy data (images) into pytorch tensors and normalizes them with a mean of 0 and std. deviation of 1.
-    Source: https://stats.stackexchange.com/questions/46429/transform-data-to-desired-mean-and-standard-deviation
+
+    The formula used is taken from: https://stats.stackexchange.com/questions/46429/transform-data-to-desired-mean-and-standard-deviation
+
+    Parameters
+    ----------
+    data : list [np.array, np.array]
+        the test data [images, labels]
+
+    Returns
+    -------
+    data_norm : list [torch.tensor, torch.tensor]
+        the normalized test data [images, labels]
     """
 
     print("\nPreprocessing data: Converting to tensor and normalizing with μ=0 and σ=1")
@@ -53,11 +64,23 @@ def preprocess(data):
     s2 = np.std(labels_norm).reshape(-1, 1)
     # print(f"Shape of μ, σ vector (should be 1x1): {np.shape(m2), np.shape(s2)}")
 
-    return [images_norm, labels_norm]
+    data_norm = [images_norm, labels_norm]
+
+    return data_norm
 
 def load_data(input_filepath):
     """
     Loads the train and test MNIST data from the data/raw folder
+
+    Parameters
+    ----------
+    input_filepath : torch.nn.Module
+        the model to predict with
+
+    Returns
+    -------
+    data : list [np.array, np.array]
+        the test data [images, labels]
     """
 
     print(f"\nLoading data from: {input_filepath}")
@@ -67,12 +90,24 @@ def load_data(input_filepath):
     labels = data["labels"]
     _ = data["allow_pickle"]
 
-    return [images, labels]
+    data = [images, labels]
 
+    return data
 
 def predict(model, dataloader):
     """
     Create predictions based on the latest version of the trained model.
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        the model to predict with
+    dataloader: torch.utils.data.DataLoader
+        the dataloader with the test data
+
+    Returns
+    -------
+    None    
     """
 
     correct = 0
@@ -97,7 +132,17 @@ def predict(model, dataloader):
 
 def data2dataloader(data):
     """
-    Converts the numpy arrays to torch tensors and then to a dataloader.
+    Converts the numpy array data to torch tensors and then to a dataloader.
+
+    Parameters
+    ----------
+    data : list, [np.array, np.array]
+        the images and labels of the test data
+
+    Returns
+    -------
+    dataloader: torch.utils.data.DataLoader
+        the dataloader with the test data
     """
     
     images, labels = data
@@ -112,10 +157,24 @@ def data2dataloader(data):
 
     return dataloader
 
-def main(model_fpath, data_fpath):
+def main(model_dir, data_fpath):
+    """
+    Runs prediction scripts to test the pretrained NN on new, raw, test data (.npz).
+
+    Parameters
+    ----------
+    model_dir : str
+        the directory of the trained models
+    data_fpath : str
+        the path to the data to test upon
+
+    Returns
+    -------
+    None    
+    """
     # load model
     model = MyModel()
-    model = load_model(model, model_fpath)
+    model = load_model(model, model_dir)
 
     # load data
     data = load_data(data_fpath)
@@ -130,15 +189,15 @@ def main(model_fpath, data_fpath):
 if __name__ == '__main__':
     # parse arguments
     parser = argparse.ArgumentParser(description='Predict new data with the trained model.')
-    parser.add_argument('model_fpath', nargs='?', type=str, default="models", help='the path to the trained model <model.pth>')
+    parser.add_argument('model_dir', nargs='?', type=str, default="models", help='the path to the trained model <model.pth>')
     parser.add_argument('data_fpath', nargs='?', type=str, default="data/raw/train_2.npz", help='the path to the .npz data')
 
     args = parser.parse_args()
-    model_fpath = args.model_fpath
+    model_dir = args.model_dir
     data_fpath = args.data_fpath
 
     # not used in this stub but often useful for finding various files
     project_dir = Path(__file__).resolve().parents[2]
 
     print("Running inference on new, untrained upon data...")
-    main(model_fpath, data_fpath)
+    main(model_dir, data_fpath)

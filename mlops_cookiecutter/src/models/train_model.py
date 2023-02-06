@@ -9,16 +9,34 @@ from model import MyModel
 
 def validation(
     model: nn.Module, 
-    testloader: torch.utils.data.DataLoader, 
+    validloader: torch.utils.data.DataLoader, 
     criterion: Union[Callable, nn.Module]
 ) -> Tuple[float, float]:
+    """
+    Validated the training process n the validation set.
+    
+    Parameters
+    ----------
+    model : list
+        the NN model
+    validloader : torch.utils.data.DataLoader
+        the validation Dataloader 
+    criterion : Union[Callable, nn.Module]
+        the MNIST data in the form of a 4d list with numpy arrays
+
+    Returns
+    -------
+    (valid_loss, accuracy) : tuple
+        the validation loss and the validation accuracy
+    """
+
     accuracy = 0
-    test_loss = 0
-    for images, labels in testloader:
+    valid_loss = 0
+    for images, labels in validloader:
         images = images.resize_(images.size()[0], 784)
 
-        features, output = model.forward(images)
-        test_loss += criterion(output, labels).item()
+        _, output = model.forward(images)
+        valid_loss += criterion(output, labels).item()
 
         ## Calculating the accuracy 
         # Model's output is log-softmax, take exponential to get the probabilities
@@ -28,7 +46,7 @@ def validation(
         # Accuracy is number of correct predictions divided by all predictions, just take the mean
         accuracy += equality.type_as(torch.FloatTensor()).mean().item()
 
-    return test_loss, accuracy
+    return valid_loss, accuracy
 
 
 def train(
@@ -40,6 +58,23 @@ def train(
     epochs: int = 5, 
     print_every: int = 40,
 ) -> None:
+    """
+    Validated the training process n the validation set.
+    
+    Parameters
+    ----------
+    model : list
+        the NN model
+    validloader : torch.utils.data.DataLoader
+        the validation Dataloader 
+    criterion : Union[Callable, nn.Module]
+        the MNIST data in the form of a 4d list with numpy arrays
+
+    Returns
+    -------
+    (valid_loss, accuracy) : tuple
+        the validation loss and the validation accuracy
+    """
 
     # check which version of the model we are running
     model_relative_dir = "models"
@@ -144,6 +179,7 @@ def train(
                     test_losses, test_accuracies)
 
 def main():
+    """Runs train and validation scripts to train a NN based on the processed MNIST data in data/processed in the form of tensors."""
     # load model
     model = MyModel()
     model = load_model(model)

@@ -28,7 +28,18 @@ def get_latest_version(model_dir="models"):
     """
     Gets the latest version of the model.
     If no previous version exists, it returns -1.
+        
+    Parameters
+    ----------
+    model_dir : str, optional
+        directory with the pretrained, saved models
+
+    Returns
+    -------
+    version : int
+        version of the trained model (-1 means that no pretrained model exists)
     """
+
     version = -1
     for folder in os.listdir(model_dir):
         if folder.startswith('v'):
@@ -40,6 +51,17 @@ def get_latest_version(model_dir="models"):
 def save_latest_model(model, model_dir='models'):
     """
     Saves the latest model in the "latest" fubfolder in the "models" folder
+        
+    Parameters
+    ----------
+    model : torch.nn.Module
+        the pretrained network
+    model_dir : str, optional
+        directory with the pretrained, saved models
+
+    Returns
+    -------
+    None
     """
     version = get_latest_version()
     if version > -1:
@@ -49,32 +71,55 @@ def save_latest_model(model, model_dir='models'):
         print(f"Saving LATEST model in directory: {latest_model_path}/model.pth")
         torch.save(model.state_dict(), latest_model_path + "/model.pth")
 
-def load_tensors(datadir="data/processed"):
+def load_tensors(data_dir="data/processed"):
     """
-    Loads the saved tensors in data/processed
+    Loads the saved tensors in data/processed.
+        
+    Parameters
+    ----------
+    data_dir : str, optional
+        directory with the processed (.py) MNIST data
+
+    Returns
+    -------
+    (trainloader, validloader) : tuple
+        dataloaders for the training and validation MNIST dataset
     """
 
     # alternative to move to the preset directory
-    print(f"Loading data from: {datadir}")
+    print(f"Loading data from: {data_dir}")
 
-    train_images = torch.load(datadir + '/train_images.pt')
-    train_labels = torch.load(datadir + '/train_labels.pt')
-    test_images = torch.load(datadir + '/test_images.pt')
-    test_labels = torch.load(datadir + '/test_labels.pt')
+    train_images = torch.load(data_dir + '/train_images.pt')
+    train_labels = torch.load(data_dir + '/train_labels.pt')
+    valid_images = torch.load(data_dir + '/valid_images.pt')
+    valid_labels = torch.load(data_dir + '/valid_labels.pt')
 
     # Create the custom dataset object
     train_dataset = MnistDataset(train_images, train_labels)
-    test_dataset = MnistDataset(test_images, test_labels)
+    valid_dataset = MnistDataset(valid_images, valid_labels)
 
     # Create the DataLoader
     trainloader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=2)
-    testloader = DataLoader(test_dataset, batch_size=32, shuffle=False, num_workers=2)
+    validloader = DataLoader(valid_dataset, batch_size=32, shuffle=False, num_workers=2)
 
-    return trainloader, testloader
+    return trainloader, validloader
 
 def save_model(model, version, model_dir='models'):
     """
     Saves the model in a subfolder in the "models" folder that is named after the version of the model (i.e. v1, v2, v3 etc...)
+        
+    Parameters
+    ----------
+    model : torch.nn.Module
+        the pretrained network
+    version : int
+        the version of the pretrained model
+    model_dir : str, optional
+        directory with the pretrained, saved models
+
+    Returns
+    -------
+    None
     """
     version_dir = os.path.join(model_dir, 'v{}'.format(version))
     if not os.path.exists(version_dir):
@@ -87,6 +132,18 @@ def save_model(model, version, model_dir='models'):
 def load_model(model, model_dir='models'):
     """
     Loads the last saved version of the model, or if there is none, does nothing.
+        
+    Parameters
+    ----------
+    model : torch.nn.Module
+       an instance of the pretrained model
+    model_dir : str, optional
+        directory with the pretrained, saved models
+
+    Returns
+    -------
+    model : torch.nn.Module
+        the latest version of the pretrained network
     """
     print(f"Loading model from directory: {model_dir}")
 
