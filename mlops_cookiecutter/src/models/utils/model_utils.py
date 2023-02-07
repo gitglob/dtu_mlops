@@ -1,4 +1,5 @@
 import os
+from typing import Tuple
 
 import torch
 from torch.utils.data import DataLoader, Dataset
@@ -25,7 +26,7 @@ class MnistDataset(Dataset):
             return self.images[idx]
 
 
-def get_latest_version(model_dir="models"):
+def get_latest_version(model_dir: str = "models") -> int:
     """
     Gets the latest version of the model.
     If no previous version exists, it returns -1.
@@ -50,7 +51,7 @@ def get_latest_version(model_dir="models"):
     return version
 
 
-def save_latest_model(model, model_dir="models"):
+def save_latest_model(model: torch.nn.Module, model_dir="models") -> None:
     """
     Saves the latest model in the "latest" fubfolder in the "models" folder
 
@@ -74,7 +75,9 @@ def save_latest_model(model, model_dir="models"):
         torch.save(model.state_dict(), latest_model_path + "/model.pth")
 
 
-def load_tensors(data_dir="data/processed"):
+def load_tensors(
+    data_dir="data/processed",
+) -> Tuple[torch.utils.data.DataLoader, torch.utils.data.DataLoader]:
     """
     Loads the saved tensors in data/processed.
 
@@ -108,7 +111,7 @@ def load_tensors(data_dir="data/processed"):
     return trainloader, validloader
 
 
-def save_model(model, version, model_dir="models"):
+def save_model(model: torch.nn.Module, version: int, model_dir="models") -> None:
     """
     Saves the model in a subfolder in the "models" folder that is named after the version
     of the model (i.e. v1, v2, v3 etc...)

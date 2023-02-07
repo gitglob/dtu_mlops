@@ -5,13 +5,8 @@ from typing import Callable, Optional, Tuple, Union
 import torch
 from model import MyModel
 from torch import nn
-from utils.model_utils import (
-    get_latest_version,
-    load_model,
-    load_tensors,
-    save_latest_model,
-    save_model,
-)
+from utils.model_utils import (get_latest_version, load_model, load_tensors,
+                               save_latest_model, save_model)
 
 
 def validation(
@@ -80,8 +75,7 @@ def train(
 
     Returns
     -------
-    (valid_loss, accuracy) : tuple
-        the validation loss and the validation accuracy
+    None
     """
 
     # check which version of the model we are running
@@ -209,7 +203,7 @@ def train(
     )
 
 
-def main():
+def main() -> None:
     """Runs train and validation scripts to train a NN based on the processed MNIST data
     in data/processed in the form of tensors."""
     # load model

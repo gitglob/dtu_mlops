@@ -1,3 +1,6 @@
+from typing import Tuple
+
+import torch
 import torch.nn.functional as F
 from torch import nn
 
@@ -35,7 +38,7 @@ class MyModel(nn.Module):
         self.dropout = nn.Dropout(0.5)
         self.softmax = nn.Softmax()
 
-    def forward(self, x):
+    def forward(self, x: torch.tensor) -> Tuple[torch.tensor, torch.tensor]:
         """
         Does a forward pass on the NN
 
@@ -64,7 +67,7 @@ class MyModel(nn.Module):
 
         return features, x
 
-    def pshape(self, x):
+    def pshape(self, x: torch.tensor) -> None:
         """
         Prints the shape of the input tensor
 

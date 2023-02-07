@@ -5,21 +5,22 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
 from sklearn.manifold import TSNE
 
 
 def visualize_metrics(
-    e,
-    version,
-    train_steps,
-    test_steps,
-    train_losses,
-    train_accuracies,
-    test_losses,
-    test_accuracies,
-    model_dir="models",
-    vis_dir="reports/figures/metrics",
-):
+    e: int,
+    version: int,
+    train_steps: int,
+    test_steps: int,
+    train_losses: list,
+    train_accuracies: list,
+    test_losses: list,
+    test_accuracies: list,
+    model_dir: str = "models",
+    vis_dir: str = "reports/figures/metrics",
+) -> None:
     """
     Visualizes and saves the figure of the loss and accuracy over time of the trained
     model in reports/difures/metrics.
@@ -92,7 +93,9 @@ def visualize_metrics(
     plt.close()
 
 
-def visualize_features(features, vis_dir="reports/figures/features"):
+def visualize_features(
+    features: np.ndarray, vis_dir: str = "reports/figures/features"
+) -> None:
     """
     Visualizes and saves the 2d features of the training data in reports/difures/features.
 
@@ -125,7 +128,9 @@ def visualize_features(features, vis_dir="reports/figures/features"):
     plt.close()
 
 
-def extract_features(model, dataloader):
+def extract_features(
+    model: torch.nn.Module, dataloader: torch.utils.data.DataLoader
+) -> np.ndarray:
     """
     Extract the 2d features of the training data using sklearn's TSNE as a feature
     extractor.
@@ -160,10 +165,11 @@ def extract_features(model, dataloader):
         features_2d_list.extend(features_2d.tolist())
 
     features_out = np.array(features_2d_list)
+
     return features_out
 
 
-def main(model_dir, data_fpath):
+def main(model_dir: str, data_fpath: str) -> None:
     """
     Calls all the necessary functions to visualize the 2d features of the training data.
 

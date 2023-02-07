@@ -2,6 +2,7 @@
 import logging
 import os
 from pathlib import Path
+from typing import List
 
 import click
 import numpy as np
@@ -9,7 +10,7 @@ import torch
 from dotenv import find_dotenv, load_dotenv
 
 
-def load_mnist(mnist_dir):
+def load_mnist(mnist_dir: str) -> List[np.ndarray]:
     """
     Loads the train and validation MNIST data from the data/raw folder
 
@@ -48,7 +49,7 @@ def load_mnist(mnist_dir):
     return data_out
 
 
-def normalize(image, m2=0, s2=1):
+def normalize(image: np.ndarray, m2: int = 0, s2: int = 1) -> np.ndarray:
     """
     Function to normalize a given image with a specific mean and std. deviation
 
@@ -75,7 +76,7 @@ def normalize(image, m2=0, s2=1):
     return image_norm
 
 
-def preprocess(data):
+def preprocess(data: List[np.ndarray]) -> List[torch.tensor]:
     """
     Convert numpy data (images) into pytorch tensors and normalizes them with a
     mean of 0 and std. deviation of 1.
@@ -153,7 +154,7 @@ def preprocess(data):
     return data_out
 
 
-def save_data(data, save_dir):
+def save_data(data: List[np.ndarray], save_dir: str) -> None:
     """
     Saves the incoming normalized pytorch tensors in the specified filepath.
 
@@ -195,7 +196,7 @@ def save_data(data, save_dir):
     default="/home/glob/Documents/github/dtu_mlops/mlops_cookiecutter/data/processed",
     type=click.Path(),
 )
-def main(input_datadir, output_datadir):
+def main(input_datadir: str, output_datadir: str) -> None:
     """
     Runs data processing scripts to turn raw data from (../raw) into cleaned data ready
     to be analyzed (saved in ../processed).

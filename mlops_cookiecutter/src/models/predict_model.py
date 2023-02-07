@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 from pathlib import Path
+from typing import List
 
 import numpy as np
 import torch
@@ -10,7 +11,7 @@ from torch.utils.data import DataLoader
 from utils.model_utils import MnistDataset, load_model
 
 
-def preprocess(data):
+def preprocess(data: List[np.ndarray]) -> List[torch.tensor]:
     """
     Convert numpy data (images) into pytorch tensors and normalizes them with a mean of 0
     and std. deviation of 1.
@@ -73,7 +74,7 @@ def preprocess(data):
     return data_norm
 
 
-def load_data(input_filepath):
+def load_data(input_filepath: str) -> List[np.ndarray]:
     """
     Loads the train and test MNIST data from the data/raw folder
 
@@ -91,7 +92,7 @@ def load_data(input_filepath):
     print(f"\nLoading data from: {input_filepath}")
     data = np.load(input_filepath)
     images = data["images"]
-    print(f"Shape of inference images: {images.shape}")
+    print(f"Shape of images: {images.shape}")
     labels = data["labels"]
     _ = data["allow_pickle"]
 
@@ -100,7 +101,7 @@ def load_data(input_filepath):
     return data
 
 
-def predict(model, dataloader):
+def predict(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader) -> None:
     """
     Create predictions based on the latest version of the trained model.
 
@@ -137,7 +138,7 @@ def predict(model, dataloader):
     print(f"Mean Loss: {loss/len(dataloader)} , Accuracy: {correct/len(dataloader)}")
 
 
-def data2dataloader(data):
+def data2dataloader(data: List[np.ndarray]) -> torch.utils.data.DataLoader:
     """
     Converts the numpy array data to torch tensors and then to a dataloader.
 
@@ -165,7 +166,7 @@ def data2dataloader(data):
     return dataloader
 
 
-def main(model_dir, data_fpath):
+def main(model_dir: str, data_fpath: str) -> None:
     """
     Runs prediction scripts to test the pretrained NN on new, raw, test data (.npz).
 
