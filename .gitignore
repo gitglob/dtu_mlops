@@ -1,7 +1,3 @@
-# Ignore earlier figures and models
-mlops_cookiecutter/models/v*
-mlops_cookiecutter/reports/figures/v*
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
