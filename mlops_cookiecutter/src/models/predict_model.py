@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from utils.model_utils import MnistDataset, load_model
 
 
-def preprocess(data: List[np.ndarray]) -> List[torch.tensor]:
+def preprocess(data: List[np.ndarray]) -> List[torch.Tensor]:
     """
     Convert numpy data (images) into pytorch tensors and normalizes them with a mean of 0
     and std. deviation of 1.
@@ -25,7 +25,7 @@ def preprocess(data: List[np.ndarray]) -> List[torch.tensor]:
 
     Returns
     -------
-    data_norm : list [torch.tensor, torch.tensor]
+    data_norm : list [torch.Tensor, torch.Tensor]
         the normalized test data [images, labels]
     """
 

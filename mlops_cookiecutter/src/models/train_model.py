@@ -5,8 +5,13 @@ from typing import Callable, Optional, Tuple, Union
 import torch
 from model import MyModel
 from torch import nn
-from utils.model_utils import (get_latest_version, load_model, load_tensors,
-                               save_latest_model, save_model)
+from utils.model_utils import (
+    get_latest_version,
+    load_model,
+    load_tensors,
+    save_latest_model,
+    save_model,
+)
 
 
 def validation(

@@ -7,13 +7,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from sklearn.manifold import TSNE
+from typing import List
 
 
 def visualize_metrics(
     e: int,
     version: int,
-    train_steps: int,
-    test_steps: int,
+    train_steps: List[int],
+    test_steps: List[int],
     train_losses: list,
     train_accuracies: list,
     test_losses: list,

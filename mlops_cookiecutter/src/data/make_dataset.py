@@ -76,7 +76,7 @@ def normalize(image: np.ndarray, m2: int = 0, s2: int = 1) -> np.ndarray:
     return image_norm
 
 
-def preprocess(data: List[np.ndarray]) -> List[torch.tensor]:
+def preprocess(data: List[np.ndarray]) -> List[torch.Tensor]:
     """
     Convert numpy data (images) into pytorch tensors and normalizes them with a
     mean of 0 and std. deviation of 1.

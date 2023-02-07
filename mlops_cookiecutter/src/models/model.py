@@ -38,18 +38,18 @@ class MyModel(nn.Module):
         self.dropout = nn.Dropout(0.5)
         self.softmax = nn.Softmax()
 
-    def forward(self, x: torch.tensor) -> Tuple[torch.tensor, torch.tensor]:
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor]:
         """
         Does a forward pass on the NN
 
         Parameters
         ----------
-        x : torch.tensor
+        x : torch.Tensor
             batch of data to perform a forward pass upon
 
         Returns
         -------
-        features, x : torch.tensor, torch.tensor
+        features, x : torch.Tensor, torch.Tensor
             the 2d features before the output layer & the output of the NN
         """
         # self.pshape(x)
@@ -67,13 +67,13 @@ class MyModel(nn.Module):
 
         return features, x
 
-    def pshape(self, x: torch.tensor) -> None:
+    def pshape(self, x: torch.Tensor) -> None:
         """
         Prints the shape of the input tensor
 
         Parameters
         ----------
-        x : torch.tensor
+        x : torch.Tensor
             input tensor
         """
         print("Shape: ", x.shape)
