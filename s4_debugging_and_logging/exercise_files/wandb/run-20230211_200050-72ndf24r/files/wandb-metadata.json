@@ -1,0 +1,125 @@
+{
+    "os": "Linux-5.15.0-60-generic-x86_64-with-glibc2.31",
+    "python": "3.10.9",
+    "heartbeatAt": "2023-02-11T19:00:51.391704",
+    "startedAt": "2023-02-11T19:00:50.822671",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/home/glob/Documents/github/dtu_mlops/s4_debugging_and_logging/exercise_files/wandb_tester.py",
+    "codePath": "s4_debugging_and_logging/exercise_files/wandb_tester.py",
+    "git": {
+        "remote": "https://github.com/gitglob/dtu_mlops.git",
+        "commit": "36e22cae72b4288fb4c5cac41812fe843dc46085"
+    },
+    "email": "pgrigor22@gmail.com",
+    "root": "/home/glob/Documents/github/dtu_mlops",
+    "host": "glob-TUF-Gaming-FA506II-FA506II",
+    "username": "glob",
+    "executable": "/home/glob/miniconda3/envs/venv_mlops/bin/python",
+    "cpu_count": 8,
+    "cpu_count_logical": 16,
+    "cpu_freq": {
+        "current": 1838.16925,
+        "min": 1400.0,
+        "max": 2900.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 1700.0,
+            "min": 1400.0,
+            "max": 2900.0
+        },
+        {
+            "current": 1400.0,
+            "min": 1400.0,
+            "max": 2900.0
+        },
+        {
+            "current": 1700.0,
+            "min": 1400.0,
+            "max": 2900.0
+        },
+        {
+            "current": 1400.0,
+            "min": 1400.0,
+            "max": 2900.0
+        },
+        {
+            "current": 1400.0,
+            "min": 1400.0,
+            "max": 2900.0
+        },
+        {
+            "current": 1400.0,
+            "min": 1400.0,
+            "max": 2900.0
+        },
+        {
+            "current": 1400.0,
+            "min": 1400.0,
+            "max": 2900.0
+        },
+        {
+            "current": 1555.146,
+            "min": 1400.0,
+            "max": 2900.0
+        },
+        {
+            "current": 1700.0,
+            "min": 1400.0,
+            "max": 2900.0
+        },
+        {
+            "current": 1856.998,
+            "min": 1400.0,
+            "max": 2900.0
+        },
+        {
+            "current": 1400.0,
+            "min": 1400.0,
+            "max": 2900.0
+        },
+        {
+            "current": 4258.799,
+            "min": 1400.0,
+            "max": 2900.0
+        },
+        {
+            "current": 1524.088,
+            "min": 1400.0,
+            "max": 2900.0
+        },
+        {
+            "current": 2098.564,
+            "min": 1400.0,
+            "max": 2900.0
+        },
+        {
+            "current": 4045.095,
+            "min": 1400.0,
+            "max": 2900.0
+        },
+        {
+            "current": 1400.0,
+            "min": 1400.0,
+            "max": 2900.0
+        }
+    ],
+    "disk": {
+        "total": 227.67739486694336,
+        "used": 125.9611587524414
+    },
+    "gpu": "NVIDIA GeForce GTX 1650 Ti",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce GTX 1650 Ti",
+            "memory_total": 4101898240
+        }
+    ],
+    "memory": {
+        "total": 15.052879333496094
+    }
+}

@@ -11,16 +11,21 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 from torchvision.utils import save_image
 
+import pdb
+
 # Model Hyperparameters
 dataset_path = 'datasets'
-cuda = True
+# cuda = False
+# Erro #1: Cuda should be set dynamically
+cuda = torch.cuda.is_available()
 DEVICE = torch.device("cuda" if cuda else "cpu")
 batch_size = 100
 x_dim  = 784
 hidden_dim = 400
 latent_dim = 20
 lr = 1e-3
-epochs = 20
+epochs = 1
+
 
 
 # Data loading
@@ -31,6 +36,7 @@ test_dataset  = MNIST(dataset_path, transform=mnist_transform, train=False, down
 
 train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 test_loader  = DataLoader(dataset=test_dataset,  batch_size=batch_size, shuffle=False)
+
 
 class Encoder(nn.Module):  
     def __init__(self, input_dim, hidden_dim, latent_dim):
@@ -45,8 +51,13 @@ class Encoder(nn.Module):
         h_       = torch.relu(self.FC_input(x))
         mean     = self.FC_mean(h_)
         log_var  = self.FC_var(h_)                     
-                                                      
-        z        = self.reparameterization(mean, log_var)
+
+        # Error #2: We must calculate the variance from the log-variance output of the encoder
+        # The exponentiation is necessary to convert the log-variance back to the original scale. 
+        # The factor of 0.5 is used because the variance is actually the square of the std.
+        #  deviation, which is the square root of the variance.
+        var      = torch.exp(0.5*log_var)                 
+        z        = self.reparameterization(mean, var)
         
         return z, mean, log_var
        
@@ -57,11 +68,13 @@ class Encoder(nn.Module):
         
         return z
     
+
 class Decoder(nn.Module):
     def __init__(self, latent_dim, hidden_dim, output_dim):
         super(Decoder, self).__init__()
         self.FC_hidden = nn.Linear(latent_dim, hidden_dim)
-        self.FC_output = nn.Linear(latent_dim, output_dim)
+        # Error #3: Shape missmatch from hidden to output
+        self.FC_output = nn.Linear(hidden_dim, output_dim)
         
     def forward(self, x):
         h     = torch.relu(self.FC_hidden(x))
@@ -69,6 +82,7 @@ class Decoder(nn.Module):
         return x_hat
     
     
+
 class Model(nn.Module):
     def __init__(self, Encoder, Decoder):
         super(Model, self).__init__()
@@ -81,6 +95,7 @@ class Model(nn.Module):
         
         return x_hat, mean, log_var
     
+
 encoder = Encoder(input_dim=x_dim, hidden_dim=hidden_dim, latent_dim=latent_dim)
 decoder = Decoder(latent_dim=latent_dim, hidden_dim = hidden_dim, output_dim = x_dim)
 
@@ -89,6 +104,7 @@ model = Model(Encoder=encoder, Decoder=decoder).to(DEVICE)
 from torch.optim import Adam
 
 BCE_loss = nn.BCELoss()
+
 
 def loss_function(x, x_hat, mean, log_var):
     reproduction_loss = nn.functional.binary_cross_entropy(x_hat, x, reduction='sum')
@@ -99,6 +115,7 @@ def loss_function(x, x_hat, mean, log_var):
 optimizer = Adam(model.parameters(), lr=lr)
 
 
+
 print("Start training VAE...")
 model.train()
 for epoch in range(epochs):
@@ -107,8 +124,13 @@ for epoch in range(epochs):
         x = x.view(batch_size, x_dim)
         x = x.to(DEVICE)
 
+        # Error #4: We need to set the gradients of all parameters in the optimizer to zero
+        optimizer.zero_grad()
+
         x_hat, mean, log_var = model(x)
+        
         loss = loss_function(x, x_hat, mean, log_var)
+        pdb.set_trace()
         
         overall_loss += loss.item()
         
@@ -116,6 +138,7 @@ for epoch in range(epochs):
         optimizer.step()
     print("\tEpoch", epoch + 1, "complete!", "\tAverage Loss: ", overall_loss / (batch_idx*batch_size))    
 print("Finish!!")
+
 
 # Generate reconstructions
 model.eval()
@@ -125,6 +148,7 @@ with torch.no_grad():
         x = x.to(DEVICE)      
         x_hat, _, _ = model(x)       
         break
+
 
 save_image(x.view(batch_size, 1, 28, 28), 'orig_data.png')
 save_image(x_hat.view(batch_size, 1, 28, 28), 'reconstructions.png')
